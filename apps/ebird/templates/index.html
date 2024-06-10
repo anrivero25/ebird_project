@@ -5,19 +5,24 @@
      display: none;
 }
 #map {
-  height: 500px;
-  width: 100%;
+  height: 400px;
+  width: 80%;
+  margin-left: 40px;
+  margin-top: 40px;
+  position: relative;
 }
 </style>
 
 <div class="section" id="app" v-cloak>
-  <h1 class="title">Bird Watching Dashboard</h1>
-  
-  <div>
-    <a href="checklist.html">Submit a Checklist</a>
+  <h1 class="title">My eBird Dashboard</h1>
+  <div class="card">
+    <footer class="card-footer">
+      <a href="[[=URL('checklist')]]" class="card-footer-item">Submit a Checklist</a>
+      <a href="[[=URL('stats')]]" class="card-footer-item">My Birding</a>
+    </footer>
   </div>
   <div>
-    <a href="[[=URL('stats')]]">My Statistics</a>
+    <!-- <a >Submit a Checklist</a> -->
   </div>
   
   <div id="map"></div>
@@ -37,9 +42,10 @@
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
   let get_heatmap_data_url = "[[=XML(get_heatmap_data_url)]]";  // Use the signed URL in the frontend
+  let checklist_url ="[[=XML(checklist_url)]]";
 
-  console.log("my_callback_url:", my_callback_url);  // Log for debugging
-  console.log("get_heatmap_data_url:", get_heatmap_data_url);  // Log for debugging
+  // console.log("my_callback_url:", my_callback_url);  // Log for debugging
+  // console.log("get_heatmap_data_url:", get_heatmap_data_url);  // Log for debugging
 </script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -59,6 +65,7 @@ new Vue({
   },
   mounted() {
     this.initMap();
+    this.map.on('click', this.onMapClick);  //added for redirecting to location on click
   },
   methods: {
     initMap() {
@@ -132,6 +139,15 @@ new Vue({
     updateSpecies(event) {
       this.selectedSpecies = event.target.value;
       this.updateMap();
+    },
+    onMapClick(event) {
+      // Capture latitude and longitude of the clicked point
+      const lat = event.latlng.lat;
+      const lng = event.latlng.lng;
+
+      // Redirect to the location page with coordinates as parameters
+      window.location.href = `[[=URL('location')]]?lat=${lat}&lng=${lng}`;
+
     },
     getStatisticsOnRegion() {
       if (this.drawnItems.getLayers().length > 0) {
