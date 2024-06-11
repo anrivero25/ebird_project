@@ -116,8 +116,9 @@ db.define_table('checklists',
     Field('longitude'),     # LONGITUDE - longitude of sighting
     Field('date'),          # DATE - observation date
     Field('time'),          # TIME - time observations started
-    Field('observer_id'),   # OBSERVER_ID - observer ID, from checklist.csv
+    Field('observer_id'),   # OBSERVER_ID - obseçrver ID, from checklist.csv
     Field('duration'),      # DURATION - duration of minutes of observations
+    Field('user_id'),       # USER_ID - ID of user account, user needs to be logged in to enter a checklist and access personal checklist page
     Field('user_email')     # USER_EMAIL - email of user account, user needs to be logged in to enter a checklist and access personal checklist page
 )
 prime_checklists()
@@ -127,12 +128,11 @@ prime_checklists()
 db.define_table('sightings',
     Field('sei'),           # SAMPLING EVENT IDENTIFIER - connects checklist & sightings
     Field('specie'),        # SPECIE - common name of the specie
-    Field('count', 'integer', default=0),         # COUNT - observation count
+    Field('count'),         # COUNT - observation count
     Field('favorite', 'boolean', default=False),      # FAVORITE - our creative addition, whether it's a favorite of the user 
     Field('user_email')     # USER_EMAIL - email of user account, user needs to be logged in to enter a checklist and access personal checklist page
 )
 prime_sightings()
-
 
 db.define_table('checklist_data',
     Field('specie'),

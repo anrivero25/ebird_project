@@ -130,12 +130,12 @@ def load_checklists():
 @action.uses(db, session, auth.user)
 def inc_count(): 
     # Get the count and id from the request
-    count = request.json.get('count')
+    count = int(request.json.get('count'))
     id = request.json.get('id')
     specie=request.json.get('specie')
     
     # Update data for checklist table
-    db.checklists.insert(observer_id=get_user_email(), user_email=get_user_email())
+    #db.checklists.insert(observer_id=get_user_email(), user_email=get_user_email())
     
     # Add observation to sightings table
     db.sightings.insert(specie=specie, count=count, user_email=get_user_email())
@@ -276,7 +276,7 @@ def get_sightings():
         }
         sightings.append(sighting_data)
 
-    #print(f"Found sightingsss: {sightings}")
+    print(f"Found sightingsss: {sightings}")
     return dict(sightings=sightings)
 
 
@@ -300,6 +300,8 @@ def get_species_list():
         min_lng = lng - lng_range
         max_lng = lng + lng_range
 
+
+        print("before query")
         # Fetch sightings within the defined range
         sightings_query = db(
             (db.checklists.latitude.cast('float') >= min_lat) &
@@ -315,6 +317,7 @@ def get_species_list():
         # Convert the query results to a list of dictionaries
         species_list = sightings_query.as_list()
 
+        print(species_list)
         # Create a dictionary to count the number of sightings for each species
         sightings_count = {}
         for sighting in species_list:
