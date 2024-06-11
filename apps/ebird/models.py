@@ -116,9 +116,8 @@ db.define_table('checklists',
     Field('longitude'),     # LONGITUDE - longitude of sighting
     Field('date'),          # DATE - observation date
     Field('time'),          # TIME - time observations started
-    Field('observer_id'),   # OBSERVER_ID - obseçrver ID, from checklist.csv
+    Field('observer_id'),   # OBSERVER_ID - observer ID, from checklist.csv
     Field('duration'),      # DURATION - duration of minutes of observations
-    Field('user_id'),       # USER_ID - ID of user account, user needs to be logged in to enter a checklist and access personal checklist page
     Field('user_email')     # USER_EMAIL - email of user account, user needs to be logged in to enter a checklist and access personal checklist page
 )
 prime_checklists()
@@ -133,6 +132,7 @@ db.define_table('sightings',
     Field('user_email')     # USER_EMAIL - email of user account, user needs to be logged in to enter a checklist and access personal checklist page
 )
 prime_sightings()
+
 
 db.define_table('checklist_data',
     Field('specie'),

@@ -61,6 +61,17 @@ app.load_data = function () {
         app.vue.checklists = r.data.data;
         console.log("Data", r.data.data); 
     });
+    // axios.get(load_stats_url).then(function (r) {
+    //     app.vue.checklists = r.data.data;
+    //     console.log("Data", r.data.data); 
+    // });
 }
+app.load_data = function () {
+    axios.get(load_stats_url).then(function (r) {
+        app.vue.checklists = r.data.data;
+        console.log("Data", r.data.data); 
+    });
+}
+
 
 app.load_data();

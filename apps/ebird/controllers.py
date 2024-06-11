@@ -32,6 +32,7 @@ from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, get_heatmap_data
 from py4web.utils.form import Form, FormStyleBulma
 from py4web.utils.grid import Grid, GridClassStyleBulma
+from py4web.utils.grid import Column
 
 import json  #added for debugging
 from pydal.validators import IS_NOT_EMPTY #added for location query
@@ -46,6 +47,7 @@ def index():
         my_callback_url = URL('my_callback', signer=url_signer),
         get_heatmap_data_url = URL('get_heatmap_data', signer=url_signer),  # Add this line
         checklist_url = URL('checklist', signer=url_signer),
+        stats_url = URL('stats', signer=url_signer),
     )
 
 @action('my_callback')
@@ -255,16 +257,44 @@ def get_top_contributors():
         return dict(error=str(e))
     
 # -------------------------- STATISTICS PAGE FUNCTIONS -------------------------- #
-@action('stats', method=['POST', 'GET'])
-@action('stats/<path:path>', method=['POST', 'GET'])
-@action.uses('stats.html', db, session, auth.user)
-def stats(path=None):
-    
-    grid = Grid(path,
-        formstyle=FormStyleBulma,
-        grid_class_style=GridClassStyleBulma,
-        query=(db.sightings.id > 0),
-        orderby=[db.sightings.specie],
-        search_queries=[['Search by Name', lambda val: db.sightings.specie.contains(val)]])
-    return dict(grid=grid)
+# @action('stats', method=['POST', 'GET'])
+# @action('stats/<path:path>', method=['POST', 'GET'])
+# @action.uses('stats.html', db, session, auth.user)
+# def stats(path=None):
+#     # print(db(db.sightings.sei))
+#     # contact = db(db.sightings.sei == S80478119).select().first()
+#     # print(contact)
+#     columns = [
+#         db.sightings.specie,
+#         db.sightings.count,
+#         db.sightings.favorite
+#     ]
+#     grid = Grid(path,
+#         formstyle=FormStyleBulma,
+#         grid_class_style=GridClassStyleBulma,
+#         # query=(db(db.sightings.sei == S80478119).select().first()),
+#         query=(db.sightings.id > 0),
+#         orderby=[db.sightings.specie],
+#         search_queries=[['Search by Name', lambda val: db.sightings.specie.contains(val)]],
+#         columns=columns)
+#     return dict(grid=grid)
 
+@action('stats', method=['POST', 'GET'])
+@action.uses('stats.html', session, db, auth.user, url_signer)
+def stats(): 
+    return dict(
+            stats_url = URL('stats', signer=url_signer),
+            load_stats_url = URL('load_stats'),
+            search_species_url = URL('search'),
+            )
+
+@action('load_stats')
+@action.uses(db, session, auth.user)
+def load_stats(): 
+    data = db(db.sightings.user_email == get_user_email()).select().first(), groupby=db.sightings.specie().as_list()
+
+    for row in data:
+        db.stats_data.update_or_insert((db.stats_data.specie == row['sightings']['specie']),
+                                           specie=row['sightings']['specie'])
+    stats_table_data = db(db.stats_data).select().as_list()
+    return dict(data=stats_table_data)
