@@ -5,20 +5,20 @@ let app = {};
 app.data = {    
     data: function() {
         return {
-            checklists: [],
+            stats: [],
             search_query: "",
             search_results: [],
         };
     },
     computed: {
         table_data: function () {
-            return this.search_results.length > 0 ? this.search_results : this.checklists;
+            return this.search_results.length > 0 ? this.search_results : this.stats;
         }    
     },
     methods: {
         //------ Helper functions -------------------------------------------------/
         find_specie_index: function(id) {
-            return this.checklists.findIndex(specie => specie.id === id);
+            return this.stats.findIndex(specie => specie.id === id);
         },
         
         //------ Event Handling ---------------------------------------------------/
@@ -45,22 +45,40 @@ app.data = {
                     console.log("total:", r.data.total)
                     let index = self.find_specie_index(id);
                     if (index !== -1) {
-                        self.checklists[index].total_count = r.data.total;
+                        self.stats[index].total_count = r.data.total;
                     }
-                    console.log("local total: ", self.checklists[index].total_count)
+                    console.log("local total: ", self.stats[index].total_count)
                 });
             }
-        }
+        },
+        checking_favorite: function(s_id){
+            let self = this;
+            // let checked = true;
+            let i = self.find_specie_index(s_id);
+            axios.post(checking_favorite_url, { id: s_id }).then(function (r) {
+                self.stats[i].favorite = r.data.favorite;
+                app.load_data();
+            })
+        },
+        // show_vis: function(s_id){
+        //     let self = this;
+        //     // let checked = true;
+        //     let i = self.find_specie_index(s_id);
+        //     axios.post(findingDates_url, { id: s_id }).then(function (r) {
+        //         app.load_data();
+        //     })
+        // },
     }
 };
 
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
-    axios.get(load_checklists_url).then(function (r) {
-        app.vue.checklists = r.data.data;
+    axios.get(load_stats_url).then(function (r) {
+        app.vue.stats = r.data.data;
         console.log("Data", r.data.data); 
     });
 }
+
 
 app.load_data();

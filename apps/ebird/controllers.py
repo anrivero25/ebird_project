@@ -32,6 +32,7 @@ from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, get_heatmap_data
 from py4web.utils.form import Form, FormStyleBulma
 from py4web.utils.grid import Grid, GridClassStyleBulma
+from py4web.utils.grid import Column
 
 import urllib.parse #for parsing location url
 import json  #added for debugging
@@ -48,6 +49,7 @@ def index():
         my_callback_url = URL('my_callback', signer=url_signer),
         get_heatmap_data_url = URL('get_heatmap_data', signer=url_signer),  # Add this line
         checklist_url = URL('checklist', signer=url_signer),
+        stats_url = URL('stats', signer=url_signer),
         location_url = URL('location', signer=url_signer)
     )
 
@@ -116,6 +118,9 @@ def inc_count():
     count = request.json.get('count')
     id = request.json.get('id')
     specie=request.json.get('specie')
+    
+    # Update data for checklist table
+    db.checklists.insert(observer_id=get_user_email(), user_email=get_user_email())
     
     # Add observation to sightings table
     # Figure out how to do SEI for new sightings
@@ -306,16 +311,62 @@ def get_top_contributors():
         return dict(error=str(e))
     
 # -------------------------- STATISTICS PAGE FUNCTIONS -------------------------- #
-@action('stats', method=['POST', 'GET'])
-@action('stats/<path:path>', method=['POST', 'GET'])
-@action.uses('stats.html', db, session, auth.user)
-def stats(path=None):
-    
-    grid = Grid(path,
-        formstyle=FormStyleBulma,
-        grid_class_style=GridClassStyleBulma,
-        query=(db.sightings.id > 0),
-        orderby=[db.sightings.specie],
-        search_queries=[['Search by Name', lambda val: db.sightings.specie.contains(val)]])
-    return dict(grid=grid)
 
+@action('stats', method=['POST', 'GET'])
+@action.uses('stats.html', session, db, auth.user, url_signer)
+def stats(): 
+    return dict(
+        stats_url = URL('stats', signer=url_signer),
+        load_stats_url = URL('load_stats'),
+        search_species_url = URL('search'),
+        checking_favorite_url = URL('checking_favorite'),
+        # dateData_url = URL('dateData'),
+        # findingDates_url = URL('findingDates'),
+        )
+
+@action('load_stats')
+@action.uses(db, session, auth.user)
+def load_stats(): 
+    user_checklists = db(db.sightings.user_email == get_user_email()).select().as_list()
+
+    # print(db(db.sightings.user_email == get_user_email()).select(db.sightings.count))
+    counts = db(db.sightings.user_email == get_user_email()).select(db.sightings.count)
+
+    return dict(data=user_checklists, count=counts)
+
+@action('checking_favorite', method='POST')
+@action.uses(db, session, auth.user)
+# marking an item as purchased;
+def checking_favorite():
+    id = request.json.get('id')
+    my_db = db(db.sightings.user_email == get_user_email()).select().first()
+    assert my_db.user_email == get_user_email() # Only the owner of the observation can inc it. 
+    if (my_db.favorite == False):
+        my_db.favorite = True
+    else:
+        my_db.favorite = False
+    my_db.update_record()
+    return dict(favorite=my_db.favorite)
+
+# @action('findingDates', method='POST')
+# @action.uses(db, session, auth.user)
+# def findingDates():
+#     id = request.json.get('id')
+#     print(id)
+#     my_db = db(db.sightings.user_email == get_user_email()).select().first()
+#     assert my_db.user_email == get_user_email() # Only the owner of the observation can inc it. 
+#     if (my_db.favorite == False):
+#         my_db.favorite = True
+#     else:
+#         my_db.favorite = False
+#     my_db.update_record()
+#     return dict(favorite=my_db.favorite)
+
+# @action('api/get_date_data', method=['GET', 'POST'])
+# @action.uses(db)
+# def get_date_data():
+#     id = request.json.get('id')
+#     print(id)
+#     my_db = db(db.sightings.user_email == get_user_email()).select().first()
+#     counts = db(db.sightings.user_email == get_user_email()).select(db.sightings.count)
+#     return dict(favorite=my_db.favorite)
