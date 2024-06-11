@@ -127,7 +127,7 @@ prime_checklists()
 db.define_table('sightings',
     Field('sei'),           # SAMPLING EVENT IDENTIFIER - connects checklist & sightings
     Field('specie'),        # SPECIE - common name of the specie
-    Field('count', 'integer'),         # COUNT - observation count
+    Field('count', 'integer', default=0),         # COUNT - observation count
     Field('favorite', 'boolean', default=False),      # FAVORITE - our creative addition, whether it's a favorite of the user 
     Field('user_email')     # USER_EMAIL - email of user account, user needs to be logged in to enter a checklist and access personal checklist page
 )

@@ -29,7 +29,7 @@ from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email, get_heatmap_data
+from .models import get_user_email, get_heatmap_data, prime_checklist_data
 from py4web.utils.form import Form, FormStyleBulma
 from py4web.utils.grid import Grid, GridClassStyleBulma
 from py4web.utils.grid import Column
@@ -84,9 +84,21 @@ def checklist():
     return dict(
             checklist_url = URL('checklist', signer=url_signer),
             my_checklist_url = URL('my_checklist', signer=url_signer),
+            edit_checklist_url = URL('edit_checklist', signer=url_signer),
             load_checklists_url = URL('load_checklists'),
             search_species_url = URL('search'),
             inc_count_url = URL('inc_count')
+            )
+
+@action('edit_checklist', method=['POST', 'GET'])
+@action.uses('edit_checklist.html', db, session, auth.user, url_signer)
+def edit_checklist():
+    return dict(
+            my_checklist_url = URL('my_checklist', signer=url_signer),
+            checklist_url = URL('checklist', signer=url_signer),
+            load_user_checklists_url = URL('load_user_checklists'),
+            edit_checklist_url = URL('edit_checklist', signer=url_signer),
+            update_checklist_url = URL('update_checklist'),
             )
 
 @action('my_checklist', method=['POST', 'GET'])
@@ -95,8 +107,11 @@ def my_checklist():
     return dict(
             my_checklist_url = URL('my_checklist', signer=url_signer),
             checklist_url = URL('checklist', signer=url_signer),
+            edit_checklist_url = URL('edit_checklist', signer=url_signer),
             load_checklists_url = URL('load_checklists'),
             load_user_checklists_url = URL('load_user_checklists'),
+            delete_checklist_url = URL('delete_checklist'),
+            search_my_species_url = URL('my_search'),
             )   
 
 @action('load_user_checklists')
@@ -123,11 +138,8 @@ def inc_count():
     db.checklists.insert(observer_id=get_user_email(), user_email=get_user_email())
     
     # Add observation to sightings table
-    # Figure out how to do SEI for new sightings
     db.sightings.insert(specie=specie, count=count, user_email=get_user_email())
-    # sighting_id = db.sightings.insert(specie=specie, count=count, user_email=get_user_email())
-    # print("sightings entry: ", db(db.sightings.id == sighting_id).select().first())      
-    
+
     # Update data for checklist table displayed on server side
     specie = db(db.checklist_data.id == id).select().first()
     specie.total_count += count; 
@@ -142,7 +154,40 @@ def search():
                                 db.checklist_data.total_count, 
                                 groupby=db.checklist_data.specie).as_list()
     return dict(results=results)
-# ----------------------------------------------------------------------------- #
+
+@action('my_search')
+@action.uses(db, session, auth.user)
+def my_search(): 
+    q = request.params.get('q')
+    results = db((db.sightings.specie.like(f"%{q}%")) & (db.sightings.user_email == get_user_email())).select(db.sightings.specie,
+                                db.sightings.count).as_list()
+    print("rseults", results)
+    return dict(results=results)
+
+@action('update_checklist', method='POST')
+@action.uses(db, session, auth.user)
+def update_checklist(): 
+
+    return dict()
+
+@action('delete_checklist', method='POST')
+@action.uses(db, session, auth.user)
+def delete_checklist():
+    id = request.json.get('id')
+    specie = request.json.get('specie')
+    count = int(request.json.get('count'))
+
+    # Delete data row from "sightings" table
+    db(db.sightings.user_email == get_user_email() and db.sightings.id == id).delete()
+    data = db(db.sightings.user_email == get_user_email()).select().as_list()
+
+    # Update total count in "checklist_data" table
+    bird = db(db.checklist_data.specie == specie).select().first()
+    new_count = bird.total_count - count
+    bird.total_count = new_count
+    bird.update_record()
+
+    return dict(user_checklists=data)
 
 # -------------------------- LOCATION PAGE FUNCTIONS -------------------------- #
 # Define lat and lng as global variables

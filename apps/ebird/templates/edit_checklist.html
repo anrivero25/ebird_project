@@ -1,0 +1,54 @@
+[[extend 'layout.html']]
+
+
+<style>
+    [v-cloak] {
+        display: none;
+    }
+</style>
+
+
+<div class="section" id="app" v-cloak>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <section class="section">
+            <div class="container">
+                <h1 class="title">Edit Checklist</h1>
+    
+                <div class="field">
+                    <label class="label">Enter new number of bird sightings</label>
+                    <div class="control">
+                        <input class="input" type="number" min="0" placeholder="Enter a number" v-model="num_birds">
+                    </div>
+                </div>
+
+                <div class="field is-grouped">
+                    <div class="control">
+                        <a href="[[=URL('my_checklist')]]" >
+                            
+                            <button class="button is-link">Submit</button>
+                        </a>
+                    </div>
+                    <div class="control">
+                        <a href="[[=URL('my_checklist')]]">
+                            <button class="button is-danger is-light">Cancel</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </body>
+</div>
+
+[[block page_scripts]]
+<script>
+    let checklist_url = "[[=XML(checklist_url)]]";
+    let my_checklist_url = "[[=XML(my_checklist_url)]]";
+    let load_user_checklists_url = "[[=XML(load_user_checklists_url)]]";
+    let edit_checklist_url = "[[=XML(edit_checklist_url)]]";
+    let update_checklist_url = "[[=XML(update_checklist_url)]]";
+</script>
+<script src="js/edit_checklist.js"></script>
+[[end]]

@@ -51,11 +51,11 @@
             <td>{{ checklist.total_count }}</td>
             <td>
               <div class="columns">
-                <div class="column">
+                <div class="column  has-text-centered">
                     <input class="input is-size-7" type="number" min="0" value="0" v-model="checklist.input" placeholder="Enter Bird Count">
                 </div>
-                <div class="column">
-                    <button class="button is-small is-primary" type="button" @click="inc_count(checklist.input, checklist.id, checklist.specie)">Save Checklist</button>
+                <div class="column  has-text-centered">
+                    <button class="button is-small is-link" type="button" @click="inc_count(checklist.input, checklist.id, checklist.specie)">Save Checklist</button>
                 </div>
               </div>
             </td>
@@ -74,6 +74,7 @@
     let load_checklists_url = "[[=XML(load_checklists_url)]]";
     let search_species_url = "[[=XML(search_species_url)]]";
     let inc_count_url = "[[=XML(inc_count_url)]]";
+    let edit_checklist_url = "[[=XML(edit_checklist_url)]]";
 </script>
 <script src="js/checklist.js"></script>
 [[end]]

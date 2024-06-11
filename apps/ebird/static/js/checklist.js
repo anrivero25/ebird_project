@@ -36,7 +36,9 @@ app.data = {
         },
         inc_count: function(count, id, specie) {
             let self = this;
+            
             if (count > 0) {
+                alert("Checklist successfully saved!");
                 axios.post(inc_count_url, {
                     count: count,
                     id: id,
@@ -49,6 +51,9 @@ app.data = {
                     }
                     console.log("local total: ", self.checklists[index].total_count)
                 });
+            }
+            else {
+                alert("Please enter a valid number");
             }
         }
     }
