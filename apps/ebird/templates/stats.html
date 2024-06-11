@@ -46,25 +46,79 @@
         </tr>
         </thead>
         <tbody> 
-          <tr v-for="checklist in table_data" :key="checklist.id">
-            <td>{{ checklist.specie }}</td>
-            <td>{{ checklist.total_count }}</td>
+          <tr v-for="stat in table_data" :key="stat.id" @element onclick="show_vis(stat.specie)">
+            <td>{{ stat.specie }}</td>
+            <td>{{ stat.count }}</td>
             <td>
               <div class="columns">
                 <div class="column">
-                    <input class="input is-size-7" type="number" min="0" value="0" v-model="checklist.input" placeholder="Enter Bird Count">
+                  <label class="checkbox" @click="checking_favorite(stat.id)">
+                    <input type="checkbox" v-model="stat.favorite">
+                  </label>
                 </div>
-                <!-- <div class="column"> -->
-                    <!-- <button class="button is-small is-primary" type="button" @click="inc_count(checklist.input, checklist.id, checklist.specie)">Save Checklist</button> -->
-                <!-- </div> -->
               </div>
             </td>
           </tr>
         </tbody>
     </table>
     </div>
+    
   </div>
 </div>
+
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const ctx = document.getElementById('myChart');
+
+  // const dataP = [
+  //   4,
+  //   5,
+  //   4,
+  //   3
+  // ];
+
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Spring', 'Summer', 'Fall', 'Winter'],
+      datasets: [{
+        label: '# of Birds Seen',
+        data: dateData = [],
+        backgroundColor: [
+          'rgb(2, 205, 86)',
+          'rgb(255, 205, 86)',
+          'rgb(255, 99, 132)',
+          'rgb(54, 162, 235)',
+        ],
+        borderWidth: 1,
+        hoverOffset: 4,
+        radius: 100
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    },
+    mounted() {
+      axios.post('/ebird/api/get_date_data')
+          .then(response => {
+              this.dateData = response.data.dateData;
+          })
+          .catch(error => {
+              console.error("Error fetching date data:", error);
+          });
+      }
+  });
+</script>
+ 
 
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
@@ -72,8 +126,11 @@
     let stats_url = "[[=XML(stats_url)]]";
     let load_stats_url = "[[=XML(load_stats_url)]]";
     let search_species_url = "[[=XML(search_species_url)]]";
+    let checking_favorite_url = "[[=XML(checking_favorite_url)]]";
+    let show_vis_url = "[[=XML(show_vis_url)]]";
+
 </script>
-<script src="js/checklist.js"></script>
+<script src="js/stats.js"></script>
 [[end]]
 
 

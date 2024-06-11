@@ -116,6 +116,9 @@ def inc_count():
     id = request.json.get('id')
     specie=request.json.get('specie')
     
+    # Update data for checklist table
+    db.checklists.insert(observer_id=get_user_email(), user_email=get_user_email())
+    
     # Add observation to sightings table
     # Figure out how to do SEI for new sightings
     db.sightings.insert(specie=specie, count=count, user_email=get_user_email())
@@ -257,44 +260,102 @@ def get_top_contributors():
         return dict(error=str(e))
     
 # -------------------------- STATISTICS PAGE FUNCTIONS -------------------------- #
-# @action('stats', method=['POST', 'GET'])
-# @action('stats/<path:path>', method=['POST', 'GET'])
-# @action.uses('stats.html', db, session, auth.user)
-# def stats(path=None):
-#     # print(db(db.sightings.sei))
-#     # contact = db(db.sightings.sei == S80478119).select().first()
-#     # print(contact)
-#     columns = [
-#         db.sightings.specie,
-#         db.sightings.count,
-#         db.sightings.favorite
-#     ]
-#     grid = Grid(path,
-#         formstyle=FormStyleBulma,
-#         grid_class_style=GridClassStyleBulma,
-#         # query=(db(db.sightings.sei == S80478119).select().first()),
-#         query=(db.sightings.id > 0),
-#         orderby=[db.sightings.specie],
-#         search_queries=[['Search by Name', lambda val: db.sightings.specie.contains(val)]],
-#         columns=columns)
-#     return dict(grid=grid)
 
 @action('stats', method=['POST', 'GET'])
 @action.uses('stats.html', session, db, auth.user, url_signer)
 def stats(): 
     return dict(
-            stats_url = URL('stats', signer=url_signer),
-            load_stats_url = URL('load_stats'),
-            search_species_url = URL('search'),
-            )
+        stats_url = URL('stats', signer=url_signer),
+        load_stats_url = URL('load_stats'),
+        search_species_url = URL('search'),
+        checking_favorite_url = URL('checking_favorite'),
+        show_vis_url = URL('show_vis'),
+        )
 
 @action('load_stats')
 @action.uses(db, session, auth.user)
 def load_stats(): 
-    data = db(db.sightings.user_email == get_user_email()).select().first(), groupby=db.sightings.specie().as_list()
+    user_checklists = db(db.sightings.user_email == get_user_email()).select().as_list()
 
-    for row in data:
-        db.stats_data.update_or_insert((db.stats_data.specie == row['sightings']['specie']),
-                                           specie=row['sightings']['specie'])
-    stats_table_data = db(db.stats_data).select().as_list()
-    return dict(data=stats_table_data)
+    # print(db(db.sightings.user_email == get_user_email()).select(db.sightings.count))
+    counts = db(db.sightings.user_email == get_user_email()).select(db.sightings.count)
+
+    return dict(data=user_checklists, count=counts)
+
+# def load_count(): 
+#     user_checklists = db(db.sightings.user_email == get_user_email()).select().as_list()
+#     user_db = db(db.sightings.user_email == get_user_email()).select().first()
+#     user_db.count
+#     print(db(db.sightings.user_email == get_user_email()).select(db.sightings.count))
+
+#     # Get the count and id from the request
+#     count = request.json.get('count')
+#     id = request.json.get('id')
+#     specie=request.json.get('specie')
+    
+#     # Update data for checklist table
+#     db.checklists.insert(observer_id=get_user_email(), user_email=get_user_email())
+    
+#     # Add observation to sightings table
+#     # Figure out how to do SEI for new sightings
+#     db.sightings.insert(specie=specie, count=count, user_email=get_user_email())
+#     # sighting_id = db.sightings.insert(specie=specie, count=count, user_email=get_user_email())
+#     # print("sightings entry: ", db(db.sightings.id == sighting_id).select().first())      
+    
+#     # Update data for checklist table displayed on server side
+#     specie = db(db.checklist_data.id == id).select().first()
+#     specie.total_count += count; 
+#     specie.update_record()
+#     return dict(total=specie.total_count)
+
+@action('checking_favorite', method='POST')
+@action.uses(db, session, auth.user)
+# marking an item as purchased;
+def checking_favorite():
+    id = request.json.get('id')
+    my_db = db(db.sightings.user_email == get_user_email()).select().first()
+    assert my_db.user_email == get_user_email() # Only the owner of the observation can inc it. 
+    if (my_db.favorite == False):
+        my_db.favorite = True
+    else:
+        my_db.favorite = False
+    my_db.update_record()
+    return dict(favorite=my_db.favorite)
+
+@action('api/get_time_data', method=['GET', 'POST'])
+@action.uses(db)
+def get_time_data():
+    try:
+        # Fetch distinct species from the sightings table based on the selected region
+        region = request.json.get('region')  # Assuming the region is sent in the request JSON
+        if region:
+            sightings_query = db((db.sightings.region == region)).select(db.sightings.specie, distinct=True)
+        else:
+            sightings_query = db().select(db.sightings.specie, distinct=True)
+        
+        species_list = sightings_query.as_list()
+
+        # Count the number of sightings for each species
+        for species in species_list:
+            species['sightings'] = db(db.sightings.specie == species['specie']).count()
+
+        return dict(speciesList=species_list)
+    except Exception as e:
+        logger.error(f"Error fetching species list: {str(e)}")
+        return dict(error=str(e))
+
+@action('show_vis', method='POST')
+@action.uses(db, session, auth.user)
+# marking an item as purchased;
+def show_vis():
+    id = request.json.get('id')
+    my_db = db(db.sightings.user_email == get_user_email()).select().first()
+    assert my_db.user_email == get_user_email() # Only the owner of the observation can inc it. 
+    print(my_db)
+    if (my_db.favorite == False):
+        my_db.favorite = True
+    else:
+        my_db.favorite = False
+    my_db.update_record()
+    print(my_db.favorite)
+    return dict(favorite=my_db.favorite)
