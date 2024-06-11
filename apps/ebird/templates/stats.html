@@ -46,7 +46,8 @@
         </tr>
         </thead>
         <tbody> 
-          <tr v-for="stat in table_data" :key="stat.id" @element onclick="show_vis(stat.specie)">
+          <!-- <tr v-for="stat in table_data" :key="stat.id" @click="show_vis(stat.specie)"> -->
+          <tr v-for="stat in table_data" :key="stat.id">
             <td>{{ stat.specie }}</td>
             <td>{{ stat.count }}</td>
             <td>
@@ -67,6 +68,7 @@
 </div>
 
 <div>
+  <h1 class="title">Bird Watching Visualization</h1>
   <canvas id="myChart"></canvas>
 </div>
 
@@ -75,12 +77,12 @@
 <script>
   const ctx = document.getElementById('myChart');
 
-  // const dataP = [
-  //   4,
-  //   5,
-  //   4,
-  //   3
-  // ];
+  const dataP = [
+    0,
+    1,
+    0,
+    0
+  ];
 
   new Chart(ctx, {
     type: 'pie',
@@ -88,7 +90,7 @@
       labels: ['Spring', 'Summer', 'Fall', 'Winter'],
       datasets: [{
         label: '# of Birds Seen',
-        data: dateData = [],
+        data: dataP,
         backgroundColor: [
           'rgb(2, 205, 86)',
           'rgb(255, 205, 86)',
@@ -107,17 +109,10 @@
         }
       }
     },
-    mounted() {
-      axios.post('/ebird/api/get_date_data')
-          .then(response => {
-              this.dateData = response.data.dateData;
-          })
-          .catch(error => {
-              console.error("Error fetching date data:", error);
-          });
-      }
   });
 </script>
+
+
  
 
 [[block page_scripts]]
@@ -127,8 +122,6 @@
     let load_stats_url = "[[=XML(load_stats_url)]]";
     let search_species_url = "[[=XML(search_species_url)]]";
     let checking_favorite_url = "[[=XML(checking_favorite_url)]]";
-    let show_vis_url = "[[=XML(show_vis_url)]]";
-
 </script>
 <script src="js/stats.js"></script>
 [[end]]

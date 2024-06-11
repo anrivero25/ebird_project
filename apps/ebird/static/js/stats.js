@@ -60,16 +60,14 @@ app.data = {
                 app.load_data();
             })
         },
-        show_vis: function(s_id){
-            document.getElementById("demo").innerHTML = "YOU CLICKED ME!";
-            // let self = this;
-            // // let checked = true;
-            // let i = self.find_specie_index(s_id);
-            // axios.post(checking_favorite_url, { id: s_id }).then(function (r) {
-            //     self.stats[i].favorite = r.data.favorite;
-            //     app.load_data();
-            // })
-        },
+        // show_vis: function(s_id){
+        //     let self = this;
+        //     // let checked = true;
+        //     let i = self.find_specie_index(s_id);
+        //     axios.post(findingDates_url, { id: s_id }).then(function (r) {
+        //         app.load_data();
+        //     })
+        // },
     }
 };
 
