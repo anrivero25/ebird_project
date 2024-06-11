@@ -1,0 +1,89 @@
+[[extend 'layout.html']]
+
+<style>
+[v-cloak] {
+     display: none;
+}
+
+</style>
+
+<div class="section" id="app" v-cloak>
+  <!-- PAGE HEADER -->
+  <div class="hero margin-bottom is-info is-small"> 
+    <div class="hero-body">
+      <div class="container is-info">
+        <h1 class="title">Bird Checklist</h1>
+        <h3 class="subtitle">Explore the vast world of bird species! Discover, learn, and track your feathery friends in our comprehensive library</h3>
+      </div>
+    </div>
+  </div>
+  <!-- SEARCH BAR AND MY-CHECKLIST PAGE REDIRECT BUTTON -->
+  <!-- <div class="m-3"> 
+    <div class="field has-addons">
+      <p class="control has-icons-left">
+        <input class="input is-rounded is-focused is-info custom-width is-medium" type="text" placeholder="Search Species" v-model="search_query" @keyup="search">
+        <span class="icon is-medium is-left">
+          <i class="fa fa-search" aria-hidden="true"></i>
+        </span>
+      </p>
+    </div>
+  </div> -->
+  <div class="m-3"> 
+    <div class="level">
+      <div class="level-left">
+        <div class="field has-addons">
+          <p class="control has-icons-left">
+            <input class="input is-rounded is-focused is-info custom-width is-medium" type="text" placeholder="Search Species" v-model="search_query" @keyup="search">
+            <span class="icon is-medium is-left">
+              <i class="fa fa-search" aria-hidden="true"></i>
+            </span>
+          </p>
+        </div>
+      </div>
+      <div class="level-right">
+        <a href="[[=URL('index')]]" class="button is-medium is-info">My Checklist</a>
+      </div>
+    </div>
+  </div>
+  <!-- TABLE OF SPECIES -->
+  <div class="section"> 
+    <table class="table is-fullwidth is-striped is-hoverable"> 
+      <thead>
+        <tr>
+          <th>Specie</th>
+          <th>Count</th>
+          <th>Enter the number of birds you have seen!</th>
+        </tr>
+        </thead>
+        <tbody> 
+          <tr v-for="checklist in table_data" :key="checklist.id">
+            <td>{{ checklist.specie }}</td>
+            <td>{{ checklist.total_count }}</td>
+            <td>
+              <div class="columns">
+                <div class="column">
+                    <input class="input is-size-7" type="number" min="0" value="0" v-model="checklist.input" placeholder="Enter Bird Count">
+                </div>
+                <div class="column">
+                    <button class="button is-small is-primary" type="button" @click="inc_count(checklist.input, checklist.id, checklist.specie)">Save Checklist</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+    let checklist_url = "[[=XML(checklist_url)]]";
+    let load_checklists_url = "[[=XML(load_checklists_url)]]";
+    let search_species_url = "[[=XML(search_species_url)]]";
+    let inc_count_url = "[[=XML(inc_count_url)]]";
+</script>
+<script src="js/checklist.js"></script>
+[[end]]
+

@@ -9,8 +9,6 @@ import csv # To read csv files
 
 import pandas as pd
 
-import pandas as pd
-
 def get_heatmap_data(species_name='all'):
     # Load CSV files
     checklists_df = pd.read_csv('./csvfiles/checklists.csv')
@@ -70,7 +68,9 @@ def prime_checklists():
                     date=row[3],
                     time=row[4],
                     observer_id=row[5],
-                    duation=row[6]
+                    duation=row[6],
+                    user_id=None,
+                    user_email=None  
                 )
 
 # Function to prime the sightings database
@@ -86,7 +86,8 @@ def prime_sightings():
                     sei=row[0],
                     specie=row[1],
                     count=row[2],
-                    favorite=False  # Default value
+                    favorite=False,  # Default value
+                    user_email=None
                 )
 # -------------------------- DATABASES -------------------------- #
 
@@ -107,7 +108,8 @@ db.define_table('checklists',
     Field('time'),          # TIME - time observations started
     Field('observer_id'),   # OBSERVER_ID - obseçrver ID, from checklist.csv
     Field('duration'),      # DURATION - duration of minutes of observations
-    Field('user_id')        # USER_ID - ID of user account, user needs to be logged in to enter a checklist and access personal checklist page
+    Field('user_id'),       # USER_ID - ID of user account, user needs to be logged in to enter a checklist and access personal checklist page
+    Field('user_email')     # USER_EMAIL - email of user account, user needs to be logged in to enter a checklist and access personal checklist page
 )
 prime_checklists()
 
@@ -117,9 +119,16 @@ db.define_table('sightings',
     Field('sei'),           # SAMPLING EVENT IDENTIFIER - connects checklist & sightings
     Field('specie'),        # SPECIE - common name of the specie
     Field('count'),         # COUNT - observation count
-    Field('favorite', 'boolean', default=False),      # FAVORITE - our creative addition, whether it's a favorite of the user :)
+    Field('favorite', 'boolean', default=False),      # FAVORITE - our creative addition, whether it's a favorite of the user 
+    Field('user_email')     # USER_EMAIL - email of user account, user needs to be logged in to enter a checklist and access personal checklist page
 )
 prime_sightings()
+
+db.define_table('checklist_data',
+    Field('specie'),
+    Field('total_count', 'integer'),
+    Field('input', 'integer', default=0)
+)
 
 ## always commit your models to avoid problems later
 db.commit()

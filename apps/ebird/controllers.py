@@ -35,8 +35,8 @@ from .models import get_user_email, get_heatmap_data
 from py4web.utils.form import Form, FormStyleBulma
 from py4web.utils.grid import Grid, GridClassStyleBulma
 
-import json
-from pydal.validators import IS_NOT_EMPTY
+import json  #added for debugging
+from pydal.validators import IS_NOT_EMPTY #added for location query
 
 url_signer = URLSigner(session)
 
