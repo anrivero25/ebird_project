@@ -173,7 +173,7 @@
                                 time: {
                                     unit: 'day',
                                     displayFormats: {
-                                        day: 'MMM D, YYYY'
+                                        day: 'MMM D'
                                     }
                                 }
                             },
@@ -187,7 +187,8 @@
                                     label: function(context) {
                                         const datasetLabel = context.dataset.label || '';
                                         const label = context.dataset.data[context.dataIndex].label || '';
-                                        return `${datasetLabel}: ${label}`;
+                                        const date = context.dataset.data[context.dataIndex].x.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+                                        return `${datasetLabel}: ${label} - ${date}`;
                                     }
                                 }
                             }
